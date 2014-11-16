@@ -1,0 +1,4 @@
+C:\Program Files\QGIS Dufour
+C:\Program Files\QGIS Valmiera
+C:\Program Files\QGIS Chugiak
+C:\Program Files\QGIS Brighton

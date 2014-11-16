@@ -1,0 +1,6 @@
+*.py[co]
+*.qm
+*.aux.xml
+temp
+scripts/output
+tests/output
