@@ -95,9 +95,9 @@ class TC01_Attribute(TestCase):
     layer = self._testLayer(self.fileName)
     outfile = self._testDataPath(u"{}.csv".format(self.layerName), output=True)
     QgsVectorFileWriter.writeAsVectorFormat(layer, outfile, "UTF-8", layer.crs(),
-                                            "CSV", layerOptions=["GEOMETRY=AS_XY"])
+                                            "CSV", layerOptions=["LINEFORMAT=LF", "GEOMETRY=AS_XY"])
     expfile = unitTestDataPath("points.csv", own=True)
-    assert compareFile(outfile, expfile) == 0, "unexpected csv output"
+    assert compareFile(outfile, expfile, delimiter=",") == 0, "unexpected csv output"
 
   def test04_EditShapefile(self):
     """Edit the layer and overwrite save. Edits: add field, set attribute value, remove field"""
