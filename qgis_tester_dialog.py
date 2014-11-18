@@ -19,10 +19,6 @@
  *                                                                         *
  ***************************************************************************/
 """
-import imp
-import os
-import sys
-
 from PyQt4.QtGui import QDialog, QFileDialog, QMessageBox
 
 from ui_qgis_tester_dialog import Ui_QGISTesterDialog
@@ -57,4 +53,4 @@ class QGISTesterDialog(QDialog):
     with open(filename, "w") as f:
       f.write(self.html)
 
-    QMessageBox.information(self, "QGISTester", "Result has been saved to: {}".format(filename))
+    QMessageBox.information(self, "QGISTester", u"Result has been saved to: {}".format(filename))

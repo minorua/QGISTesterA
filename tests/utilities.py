@@ -26,7 +26,6 @@ import unittest
 TestCase = unittest.TestCase
 
 from PyQt4.QtCore import QFile, QSettings, qDebug
-import qgis
 
 log_to_stdout = True
 _changedSettings = {}

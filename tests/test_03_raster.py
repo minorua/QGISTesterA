@@ -52,7 +52,7 @@ class TC01_Raster(TestCase):
 
     layer = self._testLayer(self.fileName)
 
-    # write to a GeoTIFF file
+    # write to a disk
     # ref. to the InaSAFE plugin
     provider = layer.dataProvider()
     pipe = QgsRasterPipe()
@@ -82,8 +82,7 @@ class TC02_RasterFilePath(TC01_Raster):
 
   def test001_OS(self):
     """Checks if OS supports file path with Japanese characters"""
-    if not self._testAvailable():
-      assert 0, "OS cannot handle file path that includes Japanese characters"
+    assert self._testAvailable(), "OS cannot handle file path that includes Japanese characters"
 
   def test002_EnvVars(self):
     """[INFO] Environment Variable(s)"""
@@ -102,7 +101,7 @@ class TC02_RasterFilePath(TC01_Raster):
       else:
         os.mkdir(outdir)
 
-    # copy a set of shapefile
+    # copy the GeoTIFF file
     infile = unitTestDataPath(TC01_Raster.layerName, own=True)
     workfile = self._testDataPath(self.layerName)
     ext_list = [".tif"]

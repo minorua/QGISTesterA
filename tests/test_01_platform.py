@@ -32,8 +32,17 @@ class TC01_Platform(TestCase):
 
   def test01_QGIS(self):
     """[INFO] QGIS information"""
+    import os
     from qgis.core import QGis
-    print "version: {} ({})".format(QGis.QGIS_VERSION, QGis.QGIS_DEV_VERSION)
+    ver = QGis.QGIS_DEV_VERSION
+    if ver == "exported" and os.name == "posix":
+      import subprocess
+      p = subprocess.Popen('apt-cache show qgis | grep "Version:.*git"',
+                           stdout=subprocess.PIPE,
+                           stderr=subprocess.PIPE,
+                           shell=True)
+      ver = p.stdout.readline().replace("Version:", "").strip()
+    print "version: {} ({})".format(QGis.QGIS_VERSION, ver)
 
   def test02_Qt(self):
     """[INFO] Qt information"""
@@ -56,7 +65,12 @@ class TC01_Platform(TestCase):
     """[INFO] Python information"""
     print "sys.version:", sys.version
 
-  def test04_OS(self):
+  def test04_GDAL(self):
+    """[INFO] GDAL information"""
+    from osgeo import gdal
+    print "GDAL version:", gdal.__version__
+
+  def test05_OS(self):
     """[INFO] OS information"""
     import platform
     print platform.platform()
@@ -70,7 +84,7 @@ class TC02_Encoding(TestCase):
     print "sys.getfilesystemencoding:", sys.getfilesystemencoding()
 
   def test02_Qt_SJIS(self):
-    """Checks if SJIS encoding is available with Qt installation"""
+    """Checks if SJIS encoding is available in Qt installation"""
     from PyQt4.QtCore import QTextCodec
     self.assertIn("SJIS", QTextCodec.availableCodecs())
     print "SJIS is available"

@@ -86,7 +86,7 @@ class TC01_Attribute(TestCase):
       c = compareFileSet(os.path.splitext(infile)[0], os.path.splitext(outfile)[0],
                          [".shp", ".shx", ".dbf", ".prj", ".cpg"])
                          #[".dbf", ".cpg"])
-      self.assertEqual(c, [], "in and out do not match: {}".format(str(c)))
+      self.assertEqual(c, [], "input and output do not match: {}".format(str(c)))
       print 'with "ignore..." option = {}...success'.format(ignore)
 
   def test03_SaveAsCSV(self):
@@ -96,7 +96,7 @@ class TC01_Attribute(TestCase):
     outfile = self._testDataPath(u"{}.csv".format(self.layerName), output=True)
     QgsVectorFileWriter.writeAsVectorFormat(layer, outfile, "UTF-8", layer.crs(),
                                             "CSV", layerOptions=["LINEFORMAT=LF", "GEOMETRY=AS_XY"])
-    expfile = unitTestDataPath("points.csv", own=True)
+    expfile = unitTestDataPath("{}.csv".format(TC01_Attribute.layerName), own=True)
     assert compareFile(outfile, expfile, delimiter=",") == 0, "unexpected csv output"
 
   def test04_EditShapefile(self):
@@ -114,7 +114,7 @@ class TC01_Attribute(TestCase):
       workfile = self._testDataPath(layerName, output=True)
       copyFileSet(infile, workfile, [".shp", ".shx", ".dbf", ".prj", ".cpg"])
 
-      # load the copy of shapefile
+      # load the copy
       fileName = layerName + ".shp"
       layer = self._testLayer(fileName, output=True)
 
@@ -150,18 +150,17 @@ class TC01_Attribute(TestCase):
 
       # compare the file set with source
       c = compareFileSet(infile, workfile, [".shp", ".shx", ".dbf", ".prj", ".cpg"])
-      self.assertEqual(c, [], "in and out do not match: {}".format(str(c)))
+      self.assertEqual(c, [], "input and output do not match: {}".format(str(c)))
 
       print 'with "ignore..." option = {}...success'.format(ignore)
 
-  #def testxx_createShapefile(self):
+  #def testxx_CreateShapefile(self):
   #  """Create an empty shapefile"""
   #  self.skipTest("Not available")    # createEmptyDataSource() is not available from Python
 
-  def test99_restoreSettings(self):
+  def test99_RestoreSettings(self):
     """Restore settings"""
     restoreSettings()
-
 
 
 class TC02_VectorFilePath(TC01_Attribute):
@@ -182,8 +181,7 @@ class TC02_VectorFilePath(TC01_Attribute):
 
   def test001_OS(self):
     """Checks if OS supports file path with Japanese characters"""
-    if not self._testAvailable():
-      assert 0, "OS cannot handle file path that includes Japanese characters"
+    assert self._testAvailable(), "OS cannot handle file path that includes Japanese characters"
 
   def test002_EnvVars(self):
     """[INFO] Environment Variable(s)"""

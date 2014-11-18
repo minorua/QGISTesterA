@@ -64,7 +64,7 @@ def runTest():
   result.appendLog("Test started running: " + str(datetime.datetime.now()))
   result.appendLog("output directory: " + temp_dir)
 
-  for filename in os.listdir(test_dir):
+  for filename in sorted(os.listdir(test_dir)):
     file = os.path.join(test_dir, filename)
     if os.path.isfile(file) and filename.startswith("test") and filename.endswith(".py"):
       mod = imp.load_source(os.path.splitext(filename)[0], file)

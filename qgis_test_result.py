@@ -174,7 +174,8 @@ div.error {color: red;}
         desc = test.shortDescription() or ""
         if "[INFO]" in desc:
           desc = desc.replace("[INFO]", "").strip()
-          result = "info"
+          if result == "success":
+            result = "info"
 
         doc.append(u"<tr><td>{}</td><td>{}</td><td class='{}'>{}</td><td>{}</td></tr>".format(testname, desc, result, result, message))
         last_testcase = testcase
