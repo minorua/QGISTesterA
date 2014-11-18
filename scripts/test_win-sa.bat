@@ -1,5 +1,5 @@
 @echo off
-rem test_on_win.bat
+rem test_win_sa.bat
 rem begin: 2014-11-14
 rem osgeo4w_roots.txt: list of osgeo4w root directories
 
