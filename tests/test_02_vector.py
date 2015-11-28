@@ -182,8 +182,6 @@ class TC01_Attribute(TestCase):
     # close the layer
     del layer
 
-    print workfile, exfile
-
     # compare the file set with source
     c = compareFileSet(workfile, exfile, [".shp", ".shx", ".dbf", ".prj", ".cpg"])
     self.assertEqual(c, [], "output and expected dataset do not match: {}".format(str(c)))
