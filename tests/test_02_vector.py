@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""QGIS Unit tests for Vector Layer
+"""QGIS unit tests for vector layer
 
 .. note:: This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -33,16 +33,17 @@ class TC01_Attribute(TestCase):
   layerName = "points"
   fileName = layerName + ".shp"
 
-  def _testAvailable(self):
-    return True
-
-  def _testDataPath(self, filename=None, output=False):
+  @classmethod
+  def testDataPath(cls, filename=None, output=False):
     if output:
       return outputDataPath(filename)
     return unitTestDataPath(filename, own=True)
 
+  def _testAvailable(self):
+    return True
+
   def _testLayer(self, filename=None, output=False):
-    filepath = self._testDataPath(filename, output)
+    filepath = self.testDataPath(filename, output)
     layer = QgsVectorLayer(filepath, os.path.splitext(os.path.basename(filepath))[0], "ogr")
     assert layer.isValid(), "failed to load layer"
     layer.setProviderEncoding("SJIS")   #tr
@@ -50,14 +51,14 @@ class TC01_Attribute(TestCase):
 
   if debug_mode:
     def test000_Debug(self):
-      print "input directory:", self._testDataPath()
-      print "output directory:", self._testDataPath(output=True)
+      print "input directory:", self.testDataPath()
+      print "output directory:", self.testDataPath(output=True)
 
   def test01_LoadShapefile(self):
-    """Load Shapefile with non-ASCII characters in attributes"""
+    """Load a shapefile with non-ASCII characters in attributes"""
     self._testAvailable() or self.skipTest("Not available")
-    fieldName = u"文字列"       #tr
-    expected = u"あいうえお"    #tr
+    fieldName = u'\u6587\u5b57\u5217'
+    expected = u'\u3042\u3044\u3046\u3048\u304a'
 
     for ignore in [True, False]:
       setSettingValue("/qgis/ignoreShapeEncoding", ignore)
@@ -71,18 +72,18 @@ class TC01_Attribute(TestCase):
       print 'with "ignore..." option = {}...success'.format(ignore)
 
   def test02_SaveAsShapefile(self):
-    """Save the layer as a shapefile"""
+    """Save layer to a shapefile"""
     self._testAvailable() or self.skipTest("Not available")
     for ignore in [True, False]:
       setSettingValue("/qgis/ignoreShapeEncoding", ignore)
 
-      # load a shapefile and save it as a new shapefile
+      # load a shapefile and save it to a new shapefile
       layer = self._testLayer(self.fileName)
-      outfile = self._testDataPath(u"{}{}.shp".format(self.layerName, 1 if ignore else 2), output=True)
+      outfile = self.testDataPath(u"{}{}.shp".format(self.layerName, 1 if ignore else 2), output=True)
       QgsVectorFileWriter.writeAsVectorFormat(layer, outfile, "SJIS", layer.crs())
 
       # compare file set
-      infile = self._testDataPath(self.fileName)
+      infile = self.testDataPath(self.fileName)
       c = compareFileSet(os.path.splitext(infile)[0], os.path.splitext(outfile)[0],
                          [".shp", ".shx", ".dbf", ".prj", ".cpg"])
                          #[".dbf", ".cpg"])
@@ -90,33 +91,32 @@ class TC01_Attribute(TestCase):
       print 'with "ignore..." option = {}...success'.format(ignore)
 
   def test03_SaveAsCSV(self):
-    """Save the layer as a CSV file"""
+    """Save layer to a CSV file"""
     self._testAvailable() or self.skipTest("Not available")
     layer = self._testLayer(self.fileName)
-    outfile = self._testDataPath(u"{}.csv".format(self.layerName), output=True)
+    outfile = self.testDataPath(u"{}.csv".format(self.layerName), output=True)
     QgsVectorFileWriter.writeAsVectorFormat(layer, outfile, "UTF-8", layer.crs(),
                                             "CSV", layerOptions=["LINEFORMAT=LF", "GEOMETRY=AS_XY"])
     expfile = unitTestDataPath("{}.csv".format(TC01_Attribute.layerName), own=True)
     assert compareFile(outfile, expfile, delimiter=",") == 0, "unexpected csv output"
 
-  def test04_EditShapefile(self):
-    """Edit the layer and overwrite save. Edits: add field, set attribute value, remove field"""
+  def test04_EditShapefile1(self):
+    """Load a file, edit and overwrite. edits: add a field, set values to the field, and then remove the field"""
     self._testAvailable() or self.skipTest("Not available")
-    fieldName = u"文字列2"
-    c0 = ord(u"ア")
+    fieldName = u'\u6587\u5b57\u52172'
+    c0 = ord(u'\u30a2')
 
-    infile = self._testDataPath(self.layerName)
+    infile = self.testDataPath(self.layerName)
     for ignore in [True, False]:
       setSettingValue("/qgis/ignoreShapeEncoding", ignore)
 
       # copy a set of shapefile
       layerName = u"{}_edit{}".format(self.layerName, 1 if ignore else 2)
-      workfile = self._testDataPath(layerName, output=True)
+      workfile = self.testDataPath(layerName, output=True)
       copyFileSet(infile, workfile, [".shp", ".shx", ".dbf", ".prj", ".cpg"])
 
       # load the copy
-      fileName = layerName + ".shp"
-      layer = self._testLayer(fileName, output=True)
+      layer = self._testLayer(workfile + ".shp", output=True)
 
       # add a field
       layer.startEditing()
@@ -134,7 +134,7 @@ class TC01_Attribute(TestCase):
       # save and reload the shapefile
       assert layer.commitChanges(), "failed to commit changes"
       del layer
-      layer = self._testLayer(fileName, output=True)
+      layer = self._testLayer(workfile + ".shp", output=True)
 
       # check the values of the field
       c = c0
@@ -154,6 +154,41 @@ class TC01_Attribute(TestCase):
 
       print 'with "ignore..." option = {}...success'.format(ignore)
 
+  def test05_EditShapefile2(self):
+    """Load a file, remove a record and overwrite
+         edits: remove a record
+    """
+    self._testAvailable() or self.skipTest("Not available")
+    setSettingValue("/qgis/ignoreShapeEncoding", True)
+
+    infile = self.testDataPath(self.layerName)
+    exfile = TC01_Attribute.testDataPath('expected/' + TC01_Attribute.layerName)
+
+    # copy a set of shapefile
+    layerName = u"{}_del".format(self.layerName)
+    workfile = self.testDataPath(layerName, output=True)
+    copyFileSet(infile, workfile, [".shp", ".shx", ".dbf", ".prj", ".cpg"])
+
+    # load the copy
+    layer = self._testLayer(workfile + ".shp", output=True)
+
+    # remove the first record
+    layer.startEditing()
+    assert layer.deleteFeature(0), "failed to delete a feature"
+
+    # save
+    assert layer.commitChanges(), "failed to commit changes"
+
+    # close the layer
+    del layer
+
+    print workfile, exfile
+
+    # compare the file set with source
+    c = compareFileSet(workfile, exfile, [".shp", ".shx", ".dbf", ".prj", ".cpg"])
+    self.assertEqual(c, [], "output and expected dataset do not match: {}".format(str(c)))
+
+
   #def testxx_CreateShapefile(self):
   #  """Create an empty shapefile"""
   #  self.skipTest("Not available")    # createEmptyDataSource() is not available from Python
@@ -165,19 +200,20 @@ class TC01_Attribute(TestCase):
 
 class TC02_VectorFilePath(TC01_Attribute):
 
-  subDir = u"ベクタ(ソ)"
-  layerName = u"ベクタ(ソ)"
+  subDir = u'\u30d9\u30af\u30bf(\u30bd)'
+  layerName = u'\u30d9\u30af\u30bf(\u30bd)'
   fileName = layerName + ".shp"
+
+  @classmethod
+  def testDataPath(cls, filename=None, output=False):
+    outdir = cls.subDir + "_out" if output else cls.subDir
+    if filename is None:
+      return outputDataPath(outdir)
+    return outputDataPath(os.path.join(outdir, filename))
 
   def _testAvailable(self):
     fse = sys.getfilesystemencoding()
     return self.layerName == self.layerName.encode(fse, "replace").decode(fse, "replace")
-
-  def _testDataPath(self, filename=None, output=False):
-    outdir = self.subDir + "_out" if output else self.subDir
-    if filename is None:
-      return outputDataPath(outdir)
-    return outputDataPath(os.path.join(outdir, filename))
 
   def test001_OS(self):
     """Checks if OS supports file path with Japanese characters"""
@@ -193,7 +229,7 @@ class TC02_VectorFilePath(TC01_Attribute):
 
     # if output directory exists, clean up files under it. Otherwise create the output directory with non-ASCII characters
     for b in [False, True]:
-      outdir = self._testDataPath(output=b)
+      outdir = self.testDataPath(output=b)
       if os.path.exists(outdir):
         for filename in os.listdir(outdir):
           os.remove(os.path.join(outdir, filename))
@@ -202,7 +238,7 @@ class TC02_VectorFilePath(TC01_Attribute):
 
     # copy a set of shapefile
     infile = unitTestDataPath(TC01_Attribute.layerName, own=True)
-    workfile = self._testDataPath(self.layerName)
+    workfile = self.testDataPath(self.layerName)
     ext_list = [".shp", ".shx", ".dbf", ".prj", ".cpg"]
     copyFileSet(infile, workfile, ext_list)
 

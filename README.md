@@ -3,7 +3,7 @@ QGIS Tester A
 
 Make testing on various platforms easy and reliable.
 
-Currently this plugin is **experimental**, and supports only **Japanese** language.
+This is an **experimental** plugin.
 
 License
 -------
